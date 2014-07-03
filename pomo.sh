@@ -203,15 +203,23 @@ echo -e "$today_pomos) \t $time \t $eventname" >> $POMO_LOG_FILE
 # if enabled create new google calendar event
 if [ "$calendar_enabled" = "true" ]
 then
+    SUCCESSSTR="Event created:"
     calendar="$eventname today at $time for 25 minutes"
     ERROR=' '
     i=0
-    #three attemp to post calendar event
-    while [ "$ERROR" -a $i -lt 3  ]; do
+    #three attempts to post calendar event -- changed to check for SUCCESSSTR because google calendar add returns string on success"
+    while [ "${ERROR/$SUCCESSSTR}" = "$ERROR" -a $i -lt 3  ]; do
         let i=$i+1
         ERROR=$(google calendar add --cal "$cal" "$calendar" 2>&1)
-    done 
-    echo $i 
+    done
+    if [ "${ERROR/$SUCCESSSTR}" = "$ERROR" ]
+    then
+        echo "Google Calendar failed after $i attempts:"
+    else
+        echo "Google Calendar succeeded after $i attempts:"
+    fi
+    echo $ERROR
+    echo
 fi
 
 # every 4 pomodoro one long break
